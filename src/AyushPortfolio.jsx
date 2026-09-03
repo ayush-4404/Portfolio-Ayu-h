@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import emailjs from "@emailjs/browser";
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 // Restrained palette: near-black base, warm white text, one accent used sparingly
@@ -148,12 +149,19 @@ nav {
   padding: 0 48px;
   height: 60px;
   display: flex; align-items: center; justify-content: space-between;
-  background: ${T.bg}CC;
-  backdrop-filter: blur(12px);
+  background: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   border-bottom: 1px solid transparent;
-  transition: border-color 0.4s;
+  transition: all 0.4s ease;
 }
-nav.scrolled { border-color: ${T.line}; }
+nav.scrolled { 
+  background: rgba(11, 14, 20, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255, 255, 255, 0.06); 
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
 .nav-logo {
   font-family: 'DM Mono', monospace;
   font-size: 0.9rem;
@@ -271,7 +279,8 @@ section + section { border-top: 1px solid ${T.line}; }
   line-height: 1.65;
   margin-bottom: 40px;
 }
-.hero-ctas { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+.hero-ctas { display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+.hero-cta-row { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
 .hero-cta-primary {
   position: relative;
   font-size: 0.85rem;
@@ -322,6 +331,161 @@ section + section { border-top: 1px solid ${T.line}; }
   text-decoration-color: ${T.line};
 }
 .hero-cta-secondary:hover { color: ${T.text}; text-decoration-color: ${T.muted}; }
+
+/* Download Resume button */
+.hero-cta-resume {
+  position: relative;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: ${T.text};
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 11px 28px;
+  border-radius: 3px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+.hero-cta-resume:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.hero-cta-resume:active { transform: translateY(0); }
+
+/* ─── RESUME MODAL ─────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-box {
+  background: rgba(18, 23, 34, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 40px 44px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-title {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: ${T.text};
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+.modal-sub {
+  font-size: 0.84rem;
+  color: ${T.muted};
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+.modal-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.modal-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: ${T.muted};
+  letter-spacing: 0.04em;
+}
+.modal-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  color: ${T.text};
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.modal-input::placeholder { color: ${T.muted}; }
+.modal-input:focus {
+  border-color: ${T.accent}60;
+  background: rgba(255,255,255,0.06);
+  box-shadow: 0 0 0 3px ${T.accent}15;
+}
+.modal-actions { display: flex; gap: 12px; margin-top: 28px; align-items: center; }
+.modal-submit {
+  position: relative;
+  flex: 1;
+  padding: 12px 24px;
+  background: ${T.accent};
+  color: ${T.bg};
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 20px ${T.accent}30;
+}
+.modal-submit:hover:not(:disabled) { box-shadow: 0 0 32px ${T.accent}50; transform: translateY(-1px); }
+.modal-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.modal-cancel {
+  padding: 12px 20px;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: ${T.sub};
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modal-cancel:hover { background: rgba(255,255,255,0.04); color: ${T.text}; }
+.modal-success {
+  text-align: center;
+  padding: 20px 0 8px;
+}
+.modal-success-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  display: block;
+}
+.modal-success h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: ${T.text};
+  margin-bottom: 8px;
+}
+.modal-success p {
+  font-size: 0.85rem;
+  color: ${T.muted};
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.modal-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255,107,107,0.08);
+  border: 1px solid rgba(255,107,107,0.15);
+  border-radius: 6px;
+}
+@media (max-width: 700px) {
+  .modal-box { padding: 28px 24px; margin: 0 16px; }
+}
 
 .hero-photo-wrap {
   position: relative;
@@ -419,7 +583,7 @@ section + section { border-top: 1px solid ${T.line}; }
 }
 
 /* ─── ABOUT ───────────────────────────────────────────────────── */
-.about-layout { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 64px; align-items: start; }
+.about-layout { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 72px; align-items: center; }
 .about-bio {
   font-size: 1.02rem;
   font-weight: 300;
@@ -428,10 +592,20 @@ section + section { border-top: 1px solid ${T.line}; }
 }
 .about-bio p + p { margin-top: 1.2em; }
 .about-bio strong { color: ${T.text}; font-weight: 500; }
-.about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: ${T.line}; border: 1px solid ${T.line}; border-radius: 3px; overflow: hidden; }
+.about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .stat-item {
-  background: ${T.bg};
-  padding: 24px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 32px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+.stat-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-2px);
 }
 .stat-val {
   font-size: 1.9rem;
@@ -447,15 +621,25 @@ section + section { border-top: 1px solid ${T.line}; }
 @media (max-width: 700px) { .about-layout { grid-template-columns: 1fr; gap: 40px; } }
 
 /* ─── EXPERIENCE ──────────────────────────────────────────────── */
-.exp-list { display: flex; flex-direction: column; }
+.exp-list { display: flex; flex-direction: column; gap: 24px; }
 .exp-item {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 32px;
-  padding: 36px 0;
-  border-bottom: 1px solid ${T.line};
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
-.exp-item:first-child { border-top: 1px solid ${T.line}; }
+.exp-item:hover {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
 .exp-meta { padding-top: 4px; }
 .exp-date {
   font-family: 'DM Mono', monospace;
@@ -493,31 +677,43 @@ section + section { border-top: 1px solid ${T.line}; }
 .tag {
   font-family: 'DM Mono', monospace;
   font-size: 0.7rem;
-  color: ${T.muted};
-  background: ${T.surface};
-  border: 1px solid ${T.line};
-  border-radius: 2px;
-  padding: 3px 8px;
+  color: ${T.sub};
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 4px 10px;
   letter-spacing: 0.02em;
-  transition: color 0.2s, border-color 0.2s;
+  transition: all 0.2s;
 }
-.tag:hover { color: ${T.text}; border-color: ${T.muted}; }
+.tag:hover { color: ${T.text}; background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); }
 
 @media (max-width: 700px) {
   .exp-item { grid-template-columns: 1fr; gap: 12px; }
 }
 
 /* ─── SKILLS ──────────────────────────────────────────────────── */
-.skills-table { display: flex; flex-direction: column; }
+.skills-table { display: flex; flex-direction: column; gap: 16px; }
 .skills-row {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 32px;
-  padding: 24px 0;
-  border-bottom: 1px solid ${T.line};
+  padding: 24px 32px;
   align-items: baseline;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
-.skills-row:first-child { border-top: 1px solid ${T.line}; }
+.skills-row:hover {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
 .skills-group-label {
   font-family: 'DM Mono', monospace;
   font-size: 0.72rem;
@@ -538,12 +734,22 @@ section + section { border-top: 1px solid ${T.line}; }
 }
 
 /* ─── PROJECTS ────────────────────────────────────────────────── */
-.projects-list { display: flex; flex-direction: column; }
+.projects-list { display: flex; flex-direction: column; gap: 24px; }
 .project-item {
-  padding: 36px 0;
-  border-bottom: 1px solid ${T.line};
+  padding: 36px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
-.project-item:first-child { border-top: 1px solid ${T.line}; }
+.project-item:hover {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
 .project-header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
 .project-name {
   font-size: 1.15rem;
@@ -551,17 +757,26 @@ section + section { border-top: 1px solid ${T.line}; }
   color: ${T.text};
   letter-spacing: -0.03em;
 }
-.project-links-inline { display: flex; gap: 16px; }
+.project-links-inline { display: flex; gap: 12px; }
 .project-link-item {
   font-family: 'DM Mono', monospace;
   font-size: 0.72rem;
-  color: ${T.muted};
+  color: ${T.text};
   letter-spacing: 0.02em;
-  transition: color 0.2s;
-  border-bottom: 1px solid ${T.line};
-  padding-bottom: 1px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  padding: 4px 10px;
+  transition: all 0.2s;
 }
-.project-link-item:hover { color: ${T.text}; border-color: ${T.muted}; }
+.project-link-item:hover { 
+  background: rgba(255, 255, 255, 0.08); 
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+  color: ${T.text};
+}
 .project-desc {
   font-size: 0.88rem;
   color: ${T.sub};
@@ -578,15 +793,25 @@ section + section { border-top: 1px solid ${T.line}; }
 }
 
 /* ─── CERTIFICATIONS ───────────────────────────────────────────── */
-.cert-list { display: flex; flex-direction: column; }
+.cert-list { display: flex; flex-direction: column; gap: 20px; }
 .cert-item {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 32px;
-  padding: 28px 0;
-  border-bottom: 1px solid ${T.line};
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
-.cert-item:first-child { border-top: 1px solid ${T.line}; }
+.cert-item:hover {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
 .cert-issuer {
   font-family: 'DM Mono', monospace;
   font-size: 0.72rem;
@@ -616,16 +841,26 @@ section + section { border-top: 1px solid ${T.line}; }
 }
 
 /* ─── ACHIEVEMENTS ────────────────────────────────────────────── */
-.ach-list { display: flex; flex-direction: column; }
+.ach-list { display: flex; flex-direction: column; gap: 16px; }
 .ach-item {
   display: grid;
   grid-template-columns: 28px 1fr;
   gap: 16px;
-  padding: 20px 0;
-  border-bottom: 1px solid ${T.line};
+  padding: 24px 32px;
   align-items: baseline;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
-.ach-item:first-child { border-top: 1px solid ${T.line}; }
+.ach-item:hover {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+}
 .ach-idx {
   font-family: 'DM Mono', monospace;
   font-size: 0.68rem;
@@ -657,19 +892,28 @@ section + section { border-top: 1px solid ${T.line}; }
   display: inline-block;
 }
 .contact-email:hover { color: ${T.accent}; border-color: ${T.accent}; }
-.social-col { display: flex; flex-direction: column; gap: 0; }
+.social-col { display: flex; flex-wrap: wrap; gap: 12px; flex-direction: row; }
 .social-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 0;
-  border-bottom: 1px solid ${T.line};
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 20px;
   color: ${T.sub};
   font-size: 0.88rem;
-  transition: color 0.2s;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
-.social-row:first-child { border-top: 1px solid ${T.line}; }
-.social-row:hover { color: ${T.text}; }
+.social-row:hover { 
+  color: ${T.text}; 
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
 .social-arrow { font-size: 0.75rem; transition: transform 0.2s; }
-.social-row:hover .social-arrow { transform: translate(2px, -2px); }
+.social-row:hover .social-arrow { transform: translate(3px, -3px); color: ${T.accent}; }
 
 @media (max-width: 700px) { .contact-layout { grid-template-columns: 1fr; gap: 40px; } }
 
@@ -745,17 +989,17 @@ footer {
 const NAV = ["About", "Experience", "Projects", "Skills", "Certifications", "Achievements", "Contact"];
 
 const STATS = [
-  { val: "8.89", unit: "", lbl: "GPA — BIT Mesra" },
+  { val: "8.89", unit: "", lbl: "CGPA — BIT Mesra" },
   { val: "900", unit: "+", lbl: "DSA problems solved" },
-  { val: "500", unit: "+", lbl: "Stedzo users" },
-  { val: "90",  unit: "%", lbl: "Alignment recall, Jury Assist" },
+  { val: "500", unit: "+", lbl: "Active users on Product" },
+  { val: "6",  unit: "+", lbl: "months of experience" },
 ];
 
 const EXP = [
   {
     role: "Software Engineer Intern",
     company: "Jury Assist",
-    date: "May – July 2026",
+    date: "May – August 2026",
     bullets: [
       "Designed and shipped a semantic contract comparison pipeline — sentence embeddings, Hungarian alignment, LLM risk classification. 90% alignment recall, 77% faster analysis via async concurrency. Deployed to production.",
       "Architected a multi-tier subscription gating system (FastAPI, PostgreSQL, React) across 11 document tools, enabling tiered monetization.",
@@ -789,19 +1033,31 @@ const PROJECTS = [
     name: "Stedzo",
     desc: "Multi-tenant SaaS for self-study libraries — Student, Library Owner, Super Admin roles. 500+ users across 20+ libraries, deployed as web app and Android app (Capacitor v6). Backend: 45 REST routes, Socket.IO chat, 11 cron jobs. 130k+ question mock test engine with KaTeX, Razorpay + OCR payment verification.",
     tags: ["Node.js", "MongoDB", "React", "TypeScript", "Socket.IO", "Capacitor", "Razorpay"],
-    links: [{ label: "Live", href: "#" }, { label: "GitHub", href: "#" }],
+    links: [{ label: "Live", href: "https://www.stedzo.com/" }],
   },
   {
     name: "Scalable URL Shortener",
     desc: "Full-stack shortener — Base62 encoding, custom aliases, JWT auth, click analytics dashboard. Sub-10ms redirect latency via Redis caching. Containerized with Docker, API rate limiting, schema designed for high-traffic.",
     tags: ["Node.js", "Express.js", "React", "MongoDB", "Redis", "Docker"],
-    links: [{ label: "GitHub", href: "#" }, { label: "Live", href: "#" }],
+    links: [{ label: "GitHub", href: "https://github.com/ayush-4404/pico-url" }, { label: "Live", href: "https://pico-url-beta.vercel.app/" }],
   },
   {
     name: "ChatWithYoutube Extension",
     desc: "Chrome extension for conversational AI over any YouTube video. Client-side pipeline fetches, cleans, and chunks transcripts for Gemini API. LangChain memory for context-aware multi-turn chat across sessions.",
     tags: ["Python", "JavaScript", "Flask", "LangChain", "Gemini API"],
-    links: [{ label: "GitHub", href: "#" }, { label: "Streamlit", href: "#" }],
+    links: [{ label: "GitHub", href: "https://github.com/ayush-4404/youtube-chatbot-langchain" }, { label: "Streamlit", href: "https://youtube-chatbot-langchain.streamlit.app/" }],
+  },
+   {
+    name: "AutoStream AI Agent",
+    desc: "LangGraph-powered conversational agent that qualifies leads from social media conversations. Models the workflow as a state machine — nodes handle intent detection, RAG retrieval from a knowledge base, response generation, and progressive lead capture (name → email → platform). Designed for WhatsApp deployment via Meta webhooks with Redis session persistence.",
+    tags: ["Python", "LangGraph", "LangChain", "Gemini API", "RAG", "FastAPI"],
+    links: [{ label: "GitHub", href: "https://github.com/ayush-4404/AutoStreamAI-Agent" }],
+  },
+  {
+    name: "TossUp",
+    desc: "Real-time IPL match prediction platform with group-based competition. JWT auth, protected REST APIs for predictions, virtual coin transactions, and live leaderboard updates with strict server-side validation. Optimized MongoDB schemas across users, groups, matches, and bets — packaged as an Android APK.",
+    tags: ["MongoDB", "Express.js", "React", "Node.js", "JWT"],
+    links: [{ label: "GitHub", href: "https://github.com/ayush-4404/TossUp-frontend" }, { label: "Live", href: "https://tossup-lemon.vercel.app/" }],
   },
 ];
 
@@ -810,7 +1066,7 @@ const CERTIFICATIONS = [
     title: "Generative AI Leader & Practitioner",
     issuer: "Google Cloud",
     date: "2024",
-    desc: "Foundational and advanced principles of LLMs, prompt engineering, fine-tuning, and RAG architectures.",
+    desc: "Foundational and advanced principles of LLMs, prompt engineering, fine-tuning, and RAG architectures on Google Cloud infrastructure.",
   },
   {
     title: "Blockchain Technologies & Applications",
@@ -818,16 +1074,32 @@ const CERTIFICATIONS = [
     date: "2024",
     desc: "Decentralized systems, smart contract design, cryptographic consensus protocols, and Web3 applications.",
   },
+  {
+    title: "Introduction to Philosophy",
+    issuer: "The University of Edinburgh",
+    date: "2025",
+    desc: "Core philosophical traditions covering epistemology, ethics, logic, and the philosophy of mind.",
+  },
+  {
+    title: "Introduction to Basic Game Development using Scratch",
+    issuer: "Coursera Project Network",
+    date: "2021",
+    desc: "Game design fundamentals — event-driven programming, sprite logic, and interactive project building using Scratch.",
+  },
+  {
+    title: "Getting Started with Azure DevOps Boards",
+    issuer: "Coursera Project Network",
+    date: "2021",
+    desc: "Agile project tracking with Azure DevOps — work items, sprints, backlogs, and team workflow management.",
+  },
 ];
 
 const ACHIEVEMENTS = [
   { text: <><strong>900+ DSA problems</strong> solved across LeetCode, Codeforces, and GeeksforGeeks.</> },
-  { text: <><strong>Codeforces Pupil — 1250+ rating</strong>, top 25% globally. LeetCode 1800+ rating across 20+ contests.</> },
+  { text: <><strong>Codeforces Pupil — 1250+ rating</strong>. LeetCode <strong>1800+rating</strong> across 20+ contests. Top <strong>7.8% Globally</strong>.</> },
   { text: <><strong>1st Runner-up</strong>, Lost Codes Competitive Programming Contest, BIT Mesra.</> },
   { text: <><strong>Winner</strong>, Business Plan Competition, BIT Mesra 2024.</> },
   { text: <><strong>98.65 percentile, JEE Mains 2023</strong> — AIR 15,610 out of 1.1 million candidates.</> },
-  { text: <><strong>Sponsorship Head</strong>, The Literary Society, BIT Mesra — onboarded 4 sponsors, managed outreach and negotiation.</> },
-  { text: <>Certified: <strong>Generative AI</strong> (Google Cloud) · <strong>Blockchain Technologies</strong> (INSEAD).</> },
 ];
 
 const SOCIALS = [
@@ -852,7 +1124,7 @@ function useReveal(threshold = 0.1) {
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [threshold]);
   return ref;
 }
 
@@ -879,26 +1151,70 @@ function RevealDiv({ children, className = "", delay = 0, type = "reveal" }) {
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
+// Generate particles once (deterministic positions, random-ish via seed)
+const PARTICLES = (() => {
+  const types = ["dot", "dot", "dot", "ring", "cross", "diamond", "line", "dot", "ring"];
+  const seed = [];
+  for (let i = 0; i < 28; i++) {
+    const t = types[i % types.length];
+    // Spread across the viewport using golden-ratio-ish distribution
+    const x = ((i * 37.7) % 100);
+    const y = ((i * 23.3 + 11) % 100);
+    const depth = 0.3 + (i % 5) * 0.18; // parallax depth 0.3–1.02
+    seed.push({ type: t, x, y, depth });
+  }
+  return seed;
+})();
+
 export default function Portfolio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const canvasRef = useRef(null);
   const particlesRef = useRef(null);
 
-  // Generate particles once (deterministic positions, random-ish via seed)
-  const particles = useRef((() => {
-    const types = ["dot", "dot", "dot", "ring", "cross", "diamond", "line", "dot", "ring"];
-    const seed = [];
-    for (let i = 0; i < 28; i++) {
-      const t = types[i % types.length];
-      // Spread across the viewport using golden-ratio-ish distribution
-      const x = ((i * 37.7) % 100);
-      const y = ((i * 23.3 + 11) % 100);
-      const depth = 0.3 + (i % 5) * 0.18; // parallax depth 0.3–1.02
-      seed.push({ type: t, x, y, depth });
+  // Resume modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [resumeName, setResumeName] = useState("");
+  const [resumeEmail, setResumeEmail] = useState("");
+  const [resumeLoading, setResumeLoading] = useState(false);
+  const [resumeStatus, setResumeStatus] = useState("idle"); // idle | success | error
+  const [resumeError, setResumeError] = useState("");
+
+  const RESUME_LINK = "https://drive.google.com/file/d/1DGOAeeMJvZ_FeqbF6814hOtULbJ8b9Uh/view?usp=drive_link";
+
+  const openModal = () => {
+    setResumeStatus("idle");
+    setResumeName("");
+    setResumeEmail("");
+    setResumeError("");
+    setModalOpen(true);
+  };
+  const closeModal = () => setModalOpen(false);
+
+  const sendResume = async (e) => {
+    e.preventDefault();
+    if (!resumeName.trim() || !resumeEmail.trim()) return;
+    setResumeLoading(true);
+    setResumeError("");
+    try {
+      await emailjs.send(
+        "service_ssagqfn",
+        "template_7xrg43q",
+        {
+          to_name: resumeName.trim(),
+          to_email: resumeEmail.trim(),
+          resume_link: RESUME_LINK,
+        },
+        "YCISAk5ht13cwgmnH"
+      );
+      setResumeStatus("success");
+    } catch (err) {
+      console.error(err);
+      setResumeError("Something went wrong. Please try again.");
+    } finally {
+      setResumeLoading(false);
     }
-    return seed;
-  })()).current;
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -963,7 +1279,7 @@ export default function Portfolio() {
       <style>{css}</style>
       <div className="bg-canvas" ref={canvasRef}>
         <div ref={particlesRef}>
-          {particles.map((p, i) => (
+          {PARTICLES.map((p, i) => (
             <div
               key={i}
               className={`bg-particle bg-particle--${p.type}`}
@@ -1010,10 +1326,68 @@ export default function Portfolio() {
                 Full-stack developer with a passion for AI and systems.
               </p>
               <div className="hero-ctas hero-in" style={{ animationDelay: "280ms" }}>
-                <button className="hero-cta-primary" onClick={() => go("projects")}>View projects <span className="btn-arrow">→</span></button>
-                <button className="hero-cta-secondary" onClick={() => go("contact")}>Get in touch</button>
+                <div className="hero-cta-row">
+                  <button className="hero-cta-primary" onClick={() => go("projects")}>View projects <span className="btn-arrow">→</span></button>
+                  <button className="hero-cta-secondary" onClick={() => go("contact")}>Get in touch</button>
+                </div>
+                <button className="hero-cta-resume" onClick={openModal}>↓ Download Resume</button>
               </div>
             </div>
+
+            {/* ── RESUME MODAL ─────────────────────────────────── */}
+            {modalOpen && (
+              <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+                <div className="modal-box">
+                  {resumeStatus === "success" ? (
+                    <div className="modal-success">
+                      <span className="modal-success-icon">✉️</span>
+                      <h3>Resume sent!</h3>
+                      <p>Check your inbox — I've sent the resume link to <strong>{resumeEmail}</strong>.</p>
+                      <button className="modal-submit" style={{ width: "100%" }} onClick={closeModal}>Done</button>
+                    </div>
+                  ) : (
+                    <form onSubmit={sendResume}>
+                      <p className="modal-title">Get my resume</p>
+                      <p className="modal-sub">I'll send the resume directly to your email.</p>
+                      <div className="modal-field">
+                        <label className="modal-label">YOUR NAME</label>
+                        <input
+                          className="modal-input"
+                          type="text"
+                          placeholder="e.g. John Doe"
+                          value={resumeName}
+                          onChange={(e) => setResumeName(e.target.value)}
+                          required
+                          autoFocus
+                        />
+                      </div>
+                      <div className="modal-field">
+                        <label className="modal-label">YOUR EMAIL</label>
+                        <input
+                          className="modal-input"
+                          type="email"
+                          placeholder="e.g. john@example.com"
+                          value={resumeEmail}
+                          onChange={(e) => setResumeEmail(e.target.value)}
+                          required
+                        />
+                      </div>
+                      {resumeError && <p className="modal-error">{resumeError}</p>}
+                      <div className="modal-actions">
+                        <button type="button" className="modal-cancel" onClick={closeModal}>Cancel</button>
+                        <button
+                          type="submit"
+                          className="modal-submit"
+                          disabled={resumeLoading || !resumeName.trim() || !resumeEmail.trim()}
+                        >
+                          {resumeLoading ? "Sending…" : "Send Resume ↗"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              </div>
+            )}
             <div className="hero-photo-wrap hero-in" style={{ animationDelay: "160ms" }}>
               <div className="photo-circle">
                 <img src="/profile.webp" alt="Ayush Raj" />
@@ -1032,13 +1406,13 @@ export default function Portfolio() {
             <RevealDiv delay={0}>
               <div className="about-bio">
                 <p>
-                  I'm a <strong>Computer Science student at BIT Mesra</strong> building at the intersection of full-stack engineering and applied AI. I care about systems that are fast, scalable, and actually useful.
+                  I'm a <strong>Computer Science student at BIT Mesra</strong> building at the <strong>intersection of full-stack engineering and applied AI</strong>. I care about systems that are fast, scalable, and actually useful.
                 </p>
                 <p>
-                  At <strong>Jury Assist</strong>, I shipped a semantic contract analysis pipeline to production. Before that I evaluated Hindi LLM outputs at <strong>Outlier</strong>. On the side, I built <strong>Stedzo</strong> — a multi-tenant SaaS now serving 500+ users across 20+ libraries.
+                  I've had the opportunity to work on <strong>real-world engineering problems</strong>, from building <strong>production-ready backend systems</strong> to working with <strong>LLM Pipelines</strong> and <strong>large-scale data</strong>. Alongside this, I built <strong>Stedzo</strong>, a <strong>multi-tenant SaaS platform</strong> that digitizes self-study libraries and now serves <strong>500+ users across 20+ libraries</strong>.
                 </p>
                 <p>
-                  I compete in competitive programming (900+ problems, Codeforces Pupil), build Chrome extensions, containerize apps with Docker, and keep pushing the limits of what I can ship.
+                  Beyond building products, I enjoy <strong>competitive programming</strong>, with <strong>900+ problems solved</strong>, and exploring <strong>distributed systems</strong>, <strong>databases</strong>, <strong>AI</strong>, and <strong>developer tools</strong>. I like going beyond just using technology — <strong>understanding how things work under the hood</strong> and turning that understanding into software that actually ships.
                 </p>
               </div>
             </RevealDiv>
@@ -1195,7 +1569,6 @@ export default function Portfolio() {
         <div className="container">
           <div className="footer-inner">
             <span>Ayush Raj © 2026</span>
-            <span>Built with React</span>
           </div>
         </div>
       </footer>
