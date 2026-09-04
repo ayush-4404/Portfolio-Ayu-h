@@ -1229,7 +1229,7 @@ export default function Portfolio() {
     try {
       await emailjs.send(
         "service_ssagqfn",
-        "template_7xrg43q",
+        "template_qh4e05p",
         {
           to_name: resumeName.trim(),
           to_email: resumeEmail.trim(),
@@ -1239,8 +1239,21 @@ export default function Portfolio() {
       );
       setResumeStatus("success");
     } catch (err) {
-      console.error(err);
-      setResumeError("Something went wrong. Please try again.");
+      // EmailJS throws an EmailJSResponseStatus object with .status and .text
+      const status = err?.status ?? "unknown";
+      const text   = err?.text   ?? (typeof err === "string" ? err : JSON.stringify(err));
+      console.error("[EmailJS] Error:", status, text);
+      if (status === 400) {
+        setResumeError("Invalid request — check that template variables match. (" + text + ")");
+      } else if (status === 401 || status === 403) {
+        setResumeError("Authentication failed — public key or service ID may be wrong.");
+      } else if (status === 404) {
+        setResumeError("Template or service not found — check dashboard IDs.");
+      } else if (status === 429) {
+        setResumeError("Too many requests — please try again in a minute.");
+      } else {
+        setResumeError(`Something went wrong (${status}: ${text}). Please try again.`);
+      }
     } finally {
       setResumeLoading(false);
     }
@@ -1372,7 +1385,7 @@ export default function Portfolio() {
                     <div className="modal-success">
                       <span className="modal-success-icon">✉️</span>
                       <h3>Resume sent!</h3>
-                      <p>Check your inbox — I've sent the resume link to <strong>{resumeEmail}</strong>.</p>
+                      <p>Check your inbox - Resume link has been sent to <strong>{resumeEmail}</strong>.</p>
                       <button className="modal-submit" style={{ width: "100%" }} onClick={closeModal}>Done</button>
                     </div>
                   ) : (
