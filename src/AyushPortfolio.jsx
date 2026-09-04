@@ -795,22 +795,27 @@ section + section { border-top: 1px solid ${T.line}; }
 /* ─── CERTIFICATIONS ───────────────────────────────────────────── */
 .cert-list { display: flex; flex-direction: column; gap: 20px; }
 .cert-item {
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 32px;
-  padding: 32px;
+  display: flex;
+  flex-direction: column;
   background: rgba(255, 255, 255, 0.02);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
 .cert-item:hover {
   background: rgba(255, 255, 255, 0.035);
   border-color: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
+}
+.cert-body {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 32px;
+  padding: 32px;
 }
 .cert-issuer {
   font-family: 'DM Mono', monospace;
@@ -836,8 +841,28 @@ section + section { border-top: 1px solid ${T.line}; }
   color: ${T.sub};
   line-height: 1.65;
 }
+.cert-footer-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.01);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: ${T.muted};
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.cert-footer-link:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: ${T.accent};
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
 @media (max-width: 700px) {
-  .cert-item { grid-template-columns: 1fr; gap: 8px; }
+  .cert-body { grid-template-columns: 1fr; gap: 12px; padding: 24px 20px; }
 }
 
 /* ─── ACHIEVEMENTS ────────────────────────────────────────────── */
@@ -1067,30 +1092,35 @@ const CERTIFICATIONS = [
     issuer: "Google Cloud",
     date: "2024",
     desc: "Foundational and advanced principles of LLMs, prompt engineering, fine-tuning, and RAG architectures on Google Cloud infrastructure.",
+    link: "https://www.skills.google/public_profiles/0642431d-540b-40ac-af22-f69cf6f6550b/badges/9184431",
   },
   {
     title: "Blockchain Technologies & Applications",
     issuer: "INSEAD",
     date: "2024",
     desc: "Decentralized systems, smart contract design, cryptographic consensus protocols, and Web3 applications.",
+    link: "https://coursera.org/share/fedc7d9df4be1644777ca8198f9f0ce3",
   },
   {
     title: "Introduction to Philosophy",
     issuer: "The University of Edinburgh",
     date: "2025",
     desc: "Core philosophical traditions covering epistemology, ethics, logic, and the philosophy of mind.",
+    link: "https://coursera.org/share/92f6c9bc04e13b4fe44e8c823434cb3c",
   },
   {
     title: "Introduction to Basic Game Development using Scratch",
     issuer: "Coursera Project Network",
     date: "2021",
     desc: "Game design fundamentals — event-driven programming, sprite logic, and interactive project building using Scratch.",
+    link: "https://coursera.org/share/be698fd260d99ced0a5198653a79bebf",
   },
   {
     title: "Getting Started with Azure DevOps Boards",
     issuer: "Coursera Project Network",
     date: "2021",
     desc: "Agile project tracking with Azure DevOps — work items, sprints, backlogs, and team workflow management.",
+    link: "https://coursera.org/share/0da7d648a0f77846cf2260b75bb038e2",
   },
 ];
 
@@ -1390,7 +1420,14 @@ export default function Portfolio() {
             )}
             <div className="hero-photo-wrap hero-in" style={{ animationDelay: "160ms" }}>
               <div className="photo-circle">
-                <img src="/profile.webp" alt="Ayush Raj" />
+                <img
+                  src="/profile.webp"
+                  alt="Ayush Raj"
+                  width="200"
+                  height="200"
+                  fetchPriority="high"
+                  decoding="async"
+                />
               </div>
               <div className="photo-dot" />
             </div>
@@ -1508,14 +1545,26 @@ export default function Portfolio() {
           <div className="cert-list">
             {CERTIFICATIONS.map((c, i) => (
               <RevealDiv key={c.title} delay={i * 70} className="cert-item">
-                <div>
-                  <div className="cert-issuer">{c.issuer}</div>
-                  <div className="cert-date">{c.date}</div>
+                <div className="cert-body">
+                  <div>
+                    <div className="cert-issuer">{c.issuer}</div>
+                    <div className="cert-date">{c.date}</div>
+                  </div>
+                  <div>
+                    <div className="cert-title">{c.title}</div>
+                    <div className="cert-desc">{c.desc}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="cert-title">{c.title}</div>
-                  <div className="cert-desc">{c.desc}</div>
-                </div>
+                {c.link && (
+                  <a
+                    href={c.link}
+                    className="cert-footer-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View credential ↗
+                  </a>
+                )}
               </RevealDiv>
             ))}
           </div>
