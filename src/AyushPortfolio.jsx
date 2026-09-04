@@ -1385,7 +1385,7 @@ export default function Portfolio() {
                     <div className="modal-success">
                       <span className="modal-success-icon">✉️</span>
                       <h3>Resume sent!</h3>
-                      <p>Check your inbox - Resume link has been sent to <strong>{resumeEmail}</strong>.</p>
+                      <p>Check your inbox - Resume has been sent to <strong>{resumeEmail}</strong>.</p>
                       <button className="modal-submit" style={{ width: "100%" }} onClick={closeModal}>Done</button>
                     </div>
                   ) : (
