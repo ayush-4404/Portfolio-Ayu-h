@@ -1397,7 +1397,7 @@ export default function Portfolio() {
                         <input
                           className="modal-input"
                           type="text"
-                          placeholder="e.g. John Doe"
+                          placeholder="e.g. Ayush Mishra"
                           value={resumeName}
                           onChange={(e) => setResumeName(e.target.value)}
                           required
@@ -1409,7 +1409,7 @@ export default function Portfolio() {
                         <input
                           className="modal-input"
                           type="email"
-                          placeholder="e.g. john@example.com"
+                          placeholder="e.g. ayush@example.com"
                           value={resumeEmail}
                           onChange={(e) => setResumeEmail(e.target.value)}
                           required
