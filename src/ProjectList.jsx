@@ -4,11 +4,18 @@ import { hasFinePointer } from "./motion";
 
 const pad = (n) => String(n).padStart(2, "0");
 
+// Each preview ships at 480/800/1200px wide (public/projects/<name>-480.webp etc.)
+const srcSet = (src) =>
+  [480, 800].map(w => `${src.replace(/\.webp$/, `-${w}.webp`)} ${w}w`).concat(`${src} 1200w`).join(", ");
+
 // Index-style project list: big names in rows, a screenshot preview that trails
 // the cursor on hover (desktop), and an accordion panel with the full details.
 export default function ProjectList({ projects }) {
   const [open, setOpen] = useState(0); // featured project starts expanded
   const [preview, setPreview] = useState({ i: 0, on: false });
+  // The hover preview's images only load once a mouse reaches the list, so
+  // phones (no hover) and visitors who never scroll here don't download them
+  const [armed, setArmed] = useState(false);
   const previewRef = useRef(null);
   const loop = useRef({ start: () => {}, stop: () => {} });
 
@@ -17,38 +24,43 @@ export default function ProjectList({ projects }) {
     if (!el || !hasFinePointer()) return;
     const m = { x: 0, y: 0 }, p = { x: 0, y: 0 };
     let off = 40, raf = 0, running = false, primed = false;
+    // Sizes are measured once per hover session, not every frame
+    let w = 0, h = 0, vw = 0, vh = 0;
+    const measure = () => { w = el.offsetWidth; h = el.offsetHeight; vw = window.innerWidth; vh = window.innerHeight; };
 
     const move = (e) => {
       m.x = e.clientX; m.y = e.clientY;
       if (!primed) { primed = true; p.x = m.x; p.y = m.y; }
     };
     const tick = () => {
-      const w = el.offsetWidth, h = el.offsetHeight;
       const dx = m.x - p.x;
       p.x += dx * 0.14;
       p.y += (m.y - p.y) * 0.14;
       // Sit right of the cursor; glide to the left side near the viewport edge
-      const target = m.x + 40 + w > window.innerWidth - 16 ? -w - 40 : 40;
+      const target = m.x + 40 + w > vw - 16 ? -w - 40 : 40;
       off += (target - off) * 0.14;
       const x = p.x + off;
-      const y = Math.min(Math.max(p.y - h / 2, 16), window.innerHeight - h - 16);
+      const y = Math.min(Math.max(p.y - h / 2, 16), vh - h - 16);
       const rot = Math.max(-7, Math.min(7, dx * 0.06));
       el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`;
       raf = requestAnimationFrame(tick);
     };
     loop.current = {
-      start: () => { if (!running) { running = true; raf = requestAnimationFrame(tick); } },
+      start: () => { if (!running) { running = true; measure(); raf = requestAnimationFrame(tick); } },
       stop: () => { running = false; cancelAnimationFrame(raf); },
     };
     window.addEventListener("pointermove", move, { passive: true });
+    window.addEventListener("resize", measure);
     return () => {
       window.removeEventListener("pointermove", move);
+      window.removeEventListener("resize", measure);
       cancelAnimationFrame(raf);
     };
   }, []);
 
   const show = (i) => {
     if (!hasFinePointer() || i === open) return;
+    setArmed(true);
     loop.current.start();
     setPreview({ i, on: true });
   };
@@ -66,7 +78,7 @@ export default function ProjectList({ projects }) {
         <span className="pl-hint pl-hint--touch">tap a project for details</span>
       </Reveal>
 
-      <div className="pl-list">
+      <div className="pl-list" onPointerEnter={() => { if (hasFinePointer()) setArmed(true); }}>
         {projects.map((p, i) => {
           const isOpen = open === i;
           const primary = p.links.find(l => l.label === "Live") ?? p.links[0];
@@ -119,7 +131,16 @@ export default function ProjectList({ projects }) {
                       <a className="pl-shot" href={primary.href} target="_blank" rel="noopener noreferrer" aria-label={`Open ${p.name} (${primary.label})`}>
                         <span className="pl-bar"><i /><i /><i /><span>{p.domain}</span></span>
                         <span className="pl-frame">
-                          <img src={p.image} alt={`${p.name} preview`} width="1200" height="750" loading="lazy" decoding="async" />
+                          <img
+                            src={p.image}
+                            srcSet={srcSet(p.image)}
+                            sizes="(max-width: 860px) calc(100vw - 40px), 480px"
+                            alt={`${p.name} preview`}
+                            width="1200"
+                            height="750"
+                            loading="lazy"
+                            decoding="async"
+                          />
                         </span>
                       </a>
                     </div>
@@ -142,7 +163,18 @@ export default function ProjectList({ projects }) {
           <div className="pl-bar"><i /><i /><i /><span>{projects[preview.i].domain}</span></div>
           <div className="pp-window">
             <div className="pp-strip" style={{ transform: `translateY(${-preview.i * 100}%)` }}>
-              {projects.map(p => <img key={p.name} src={p.image} alt="" width="1200" height="750" decoding="async" />)}
+              {armed && projects.map(p => (
+                <img
+                  key={p.name}
+                  src={p.image}
+                  srcSet={srcSet(p.image)}
+                  sizes="(max-width: 1066px) 320px, (max-width: 1466px) 30vw, 440px"
+                  alt=""
+                  width="1200"
+                  height="750"
+                  decoding="async"
+                />
+              ))}
             </div>
           </div>
         </div>

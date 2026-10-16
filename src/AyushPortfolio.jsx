@@ -1,5 +1,4 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
-import emailjs from "@emailjs/browser";
 import { css } from "./styles";
 import { useReveal } from "./motion";
 import { Reveal, Card, SplitText, Typewriter, CountUp, Magnetic, Cursor, Background } from "./effects";
@@ -50,6 +49,7 @@ function ResumeModal({ closing, onClose }) {
     setResumeLoading(true);
     setResumeError("");
     try {
+      const { default: emailjs } = await import("@emailjs/browser");
       await emailjs.send(
         "service_ssagqfn",
         "template_qh4e05p",
@@ -178,17 +178,20 @@ export default function Portfolio() {
     let ticking = false;
     const update = () => {
       ticking = false;
+      // Read all layout values before writing any styles, so the browser doesn't
+      // have to recalculate layout mid-handler
       const y = window.scrollY;
       const vh = window.innerHeight;
       const max = document.documentElement.scrollHeight - vh;
+      const tl = timelineRef.current;
+      const tlRect = tl?.getBoundingClientRect();
+
       const p = max > 0 ? Math.min(1, y / max) : 0;
       if (progressRef.current) progressRef.current.style.transform = `scaleX(${p})`;
       if (ringRef.current) ringRef.current.style.strokeDashoffset = `${RING_C * (1 - p)}`;
       heroRef.current?.style.setProperty("--hp", Math.min(1, y / vh).toFixed(3));
-      const tl = timelineRef.current;
-      if (tl) {
-        const r = tl.getBoundingClientRect();
-        const tp = Math.min(1, Math.max(0, (vh * 0.7 - r.top) / r.height));
+      if (tlRect) {
+        const tp = Math.min(1, Math.max(0, (vh * 0.7 - tlRect.top) / tlRect.height));
         tl.style.setProperty("--p", tp.toFixed(3));
       }
       setScrolled(y > 40);
@@ -224,9 +227,10 @@ export default function Portfolio() {
       const link = navListRef.current?.querySelector(`a[data-id="${active}"]`);
       if (!ind) return;
       if (!link) { ind.style.opacity = "0"; return; }
+      const { offsetWidth, offsetLeft } = link;
       ind.style.opacity = "1";
-      ind.style.width = `${link.offsetWidth}px`;
-      ind.style.transform = `translateX(${link.offsetLeft}px)`;
+      ind.style.width = `${offsetWidth}px`;
+      ind.style.transform = `translateX(${offsetLeft}px)`;
     };
     place();
     document.fonts?.ready.then(place);
@@ -364,18 +368,19 @@ export default function Portfolio() {
                 </div>
               </div>
 
-              <div className="hero-visual hero-in" style={{ animationDelay: "300ms" }}>
+              <div className="hero-visual hero-in">
                 <div className="photo-glow" />
                 <div className="photo-orbit" />
                 <div className="photo-ring" />
                 <div className="photo-circle">
                   <img
                     src="/profile.webp"
+                    srcSet="/profile-300.webp 300w, /profile.webp 600w"
+                    sizes="(max-width: 860px) 150px, 300px"
                     alt="Ayush Raj, full-stack developer and CS student at BIT Mesra"
                     width="300"
                     height="300"
                     fetchPriority="high"
-                    decoding="async"
                   />
                 </div>
                 {HERO_CHIPS.map(c => (

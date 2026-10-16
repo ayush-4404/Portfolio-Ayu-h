@@ -212,7 +212,9 @@ export function Background() {
     const reduced = prefersReducedMotion();
     const LINK = 130, CURSOR_LINK = 190, REPEL = 120, GLOW = 420;
     const mouse = { x: -9999, y: -9999, tx: -9999, ty: -9999 };
-    let w = 0, h = 0, pts = [], raf = 0, lastScroll = window.scrollY;
+    // Viewport size comes from a ResizeObserver and scroll from a scroll listener,
+    // so nothing here forces a synchronous layout during startup or per frame
+    let w = 0, h = 0, pts = [], raf = 0, scrollY = 0, lastScroll = 0;
 
     const seed = () => {
       const count = Math.round(Math.min(90, Math.max(22, (w * h) / 15000)));
@@ -225,11 +227,11 @@ export function Background() {
       }));
     };
 
-    const resize = () => {
+    const resize = (width, height) => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const widthChanged = window.innerWidth !== w;
-      w = window.innerWidth;
-      h = window.innerHeight;
+      const widthChanged = width !== w;
+      w = width;
+      h = height;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -254,9 +256,8 @@ export function Background() {
         ctx.fillRect(mouse.x - GLOW, mouse.y - GLOW, GLOW * 2, GLOW * 2);
       }
 
-      const sy = window.scrollY;
-      const ds = sy - lastScroll;
-      lastScroll = sy;
+      const ds = scrollY - lastScroll;
+      lastScroll = scrollY;
 
       for (const p of pts) {
         if (!reduced) {
@@ -328,14 +329,25 @@ export function Background() {
       if (!document.hidden && !reduced) raf = requestAnimationFrame(draw);
     };
 
-    resize();
-    if (!reduced) raf = requestAnimationFrame(draw);
-    window.addEventListener("resize", resize);
+    const onScroll = () => { scrollY = window.scrollY; };
+
+    let started = false;
+    const ro = new ResizeObserver(([entry]) => {
+      // Read scroll while layout is still clean — resizing the canvas dirties it
+      if (!started) scrollY = lastScroll = window.scrollY;
+      resize(entry.contentRect.width, entry.contentRect.height);
+      if (started) return;
+      started = true;
+      if (!reduced) raf = requestAnimationFrame(draw);
+    });
+    ro.observe(canvas);
+    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("visibilitychange", onVisibility);
     };
