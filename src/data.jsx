@@ -26,7 +26,7 @@ export const EXP = [
   {
     role: "Software Engineer Intern",
     company: "Jury Assist",
-    date: "May – August 2026",
+    date: "May 2026 – Present",
     bullets: [
       "Designed and shipped a semantic contract comparison pipeline — sentence embeddings, Hungarian alignment, LLM risk classification. 90% alignment recall, 77% faster analysis via async concurrency. Deployed to production.",
       "Architected a multi-tier subscription gating system (FastAPI, PostgreSQL, React) across 11 document tools, enabling tiered monetization.",
