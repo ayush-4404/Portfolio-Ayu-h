@@ -2,10 +2,107 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/webp" href="/profile.webp" />
-    <link rel="preload" as="image" href="/profile.webp" type="image/webp" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ayush Raj | Portfolio</title>
+
+    <!-- Primary SEO -->
+    <title>Ayush Raj — Full-Stack &amp; AI Developer | BIT Mesra</title>
+    <meta name="description" content="Ayush Raj — full-stack &amp; AI developer and CS student at BIT Mesra, builder of Stedzo (500+ users). Projects in React, Node.js, FastAPI and LangChain." />
+    <meta name="author" content="Ayush Raj" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://www.ayushraj.live/" />
+
+    <!-- Open Graph / social previews -->
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="Ayush Raj" />
+    <meta property="og:url" content="https://www.ayushraj.live/" />
+    <meta property="og:title" content="Ayush Raj — Full-Stack &amp; AI Developer" />
+    <meta property="og:description" content="CS student at BIT Mesra building full-stack products and LLM pipelines. Builder of Stedzo, used by 500+ students across 20+ libraries." />
+    <meta property="og:image" content="https://www.ayushraj.live/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Ayush Raj — Full-Stack &amp; AI Developer, CS at BIT Mesra" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="profile:first_name" content="Ayush" />
+    <meta property="profile:last_name" content="Raj" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ayush Raj — Full-Stack &amp; AI Developer" />
+    <meta name="twitter:description" content="CS student at BIT Mesra building full-stack products and LLM pipelines. Builder of Stedzo (500+ users)." />
+    <meta name="twitter:image" content="https://www.ayushraj.live/og-image.jpg" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#0B0E14" />
+
+    <!-- Structured data: tells Google this is Ayush Raj's profile page -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://www.ayushraj.live/#website",
+            "url": "https://www.ayushraj.live/",
+            "name": "Ayush Raj",
+            "alternateName": ["Ayush Raj Portfolio", "ayushraj.live"],
+            "inLanguage": "en"
+          },
+          {
+            "@type": "ProfilePage",
+            "@id": "https://www.ayushraj.live/#profilepage",
+            "url": "https://www.ayushraj.live/",
+            "name": "Ayush Raj — Full-Stack & AI Developer",
+            "isPartOf": { "@id": "https://www.ayushraj.live/#website" },
+            "mainEntity": { "@id": "https://www.ayushraj.live/#person" }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://www.ayushraj.live/#person",
+            "name": "Ayush Raj",
+            "url": "https://www.ayushraj.live/",
+            "image": "https://www.ayushraj.live/profile.jpg",
+            "jobTitle": "Full-Stack & AI Developer",
+            "description": "Computer Science student at BIT Mesra building full-stack products and applied AI systems. Builder of Stedzo, a multi-tenant SaaS for self-study libraries.",
+            "email": "mailto:ayushmishra7484@gmail.com",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Ranchi",
+              "addressRegion": "Jharkhand",
+              "addressCountry": "IN"
+            },
+            "alumniOf": {
+              "@type": "CollegeOrUniversity",
+              "name": "Birla Institute of Technology, Mesra",
+              "url": "https://www.bitmesra.ac.in/"
+            },
+            "knowsAbout": [
+              "Full-stack development", "React", "Node.js", "FastAPI", "Python",
+              "PostgreSQL", "MongoDB", "Redis", "Docker", "LangChain", "LangGraph",
+              "Retrieval-augmented generation", "Large language models", "System design",
+              "Competitive programming"
+            ],
+            "sameAs": [
+              "https://github.com/ayush-4404",
+              "https://www.linkedin.com/in/ayush-raj-bt219/",
+              "https://leetcode.com/u/ayush_mishra44/",
+              "https://codeforces.com/profile/AYUSHmishra04",
+              "https://www.geeksforgeeks.org/profile/ayushmisltof",
+              "https://codolio.com/profile/ayush_mishra44"
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <link rel="preload" as="image" href="/profile.webp" type="image/webp" fetchpriority="high" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" />
+    <style>html, body { background: #0B0E14; }</style>
+    <!-- Scroll-reveal content starts hidden and is shown by JS; show it when JS is off -->
+    <noscript><style>.reveal, .skill-chip, .sec-num { opacity: 1 !important; transform: none !important; filter: none !important; } .sec-title span { transform: none !important; }</style></noscript>
   </head>
   <body>
     <div id="root"></div>
